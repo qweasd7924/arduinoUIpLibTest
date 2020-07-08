@@ -1,4 +1,3 @@
-// TCP сервер, возвращает полученные данные
 #include <SPI.h>
 #include <UIPEthernet.h>
 
@@ -55,17 +54,18 @@ void loop() {
 
         String resp = "a1b2c3d";
 
-        respStr = resp + respCounter+" e123";
+        respStr = resp;
+//        respStr = resp + respCounter+"e123\n";
         Serial.println(respStr);
-        Serial.println(resp.length());
-        Serial.println(respStr.length());
-        Serial.println("-------");
+        Serial.println("--- 1 ---");
 
-        uint8_t dataArray[respStr.length()+1];
+        uint8_t* dataArray = (uint8_t *) malloc(respStr.length()+1);
         respStr.getBytes(dataArray, respStr.length()+1);
+        client.write("1\n", 2);
+//        client.write(dataArray, respStr.length()+1);
+        free(dataArray);
 
-//        respStr.getBytes(respBuf, respStr.length());
-        client.write(dataArray, respStr.length()+1);
-//        free(respBuf);
+        Serial.println(respStr);
+        Serial.println("--- 2 ---");
     }
 }
