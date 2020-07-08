@@ -57,7 +57,7 @@ void loop() {
         respStr = resp;
 //        respStr = resp + respCounter+"e123\n";
         Serial.println(respStr);
-        Serial.println("--- 1 ---");
+//        Serial.println("--- 1 ---");
 
         uint8_t* dataArray = (uint8_t *) malloc(respStr.length()+1);
         respStr.getBytes(dataArray, respStr.length()+1);
@@ -66,6 +66,6 @@ void loop() {
         free(dataArray);
 
         Serial.println(respStr);
-        Serial.println("--- 2 ---");
+//        Serial.println("--- 2 ---");
     }
 }
