@@ -1,51 +1,66 @@
-//http://mypractic.ru/urok-64-tcp-server-i-klient-na-arduino-biblioteka-uipethernet.html
-//http://mypractic.ru/arduino-biblioteka-uipethernet-h-ethernet-h
-#include "Arduino.h"
-// TCP сервер, возвращает полученные данные
-//#include <SPI.h>
-#include <UIPEthernet.h>
+// Ping a remote server, also uses DHCP and DNS.
+// 2011-06-12 <jc@wippler.nl>
+//
+// License: GPLv2
 
-// определяем конфигурацию сети
-byte mac[] = {0xAE, 0xB2, 0x26, 0xE4, 0x4A, 0x5C}; // MAC-адрес
-byte ip[] = {192, 168, 0, 110}; // IP-адрес
-byte myDns[] = {192, 168, 0, 1}; // адрес DNS-сервера
-byte gateway[] = {192, 168, 0, 1}; // адрес сетевого шлюза
-byte subnet[] = {255, 255, 255, 0}; // маска подсети
+#include <Arduino.h>
+#include <EtherCard.h>
 
-EthernetServer server(2000); // создаем сервер, порт 2000
-EthernetClient client; // объект клиент
-boolean clientAlreadyConnected= false; // признак клиент уже подключен
+// ethernet interface mac address, must be unique on the LAN
+static byte mymac[] = { 0x74,0x69,0x69,0x2D,0x30,0x31 };
 
-#define resPin 8
+byte Ethernet::buffer[700];
+static uint32_t timer;
 
-void setup() {
-//    Ethernet.begin(mac, ip); // инициализация контроллера
-    Ethernet.begin(mac, ip, myDns, gateway, subnet); // инициализация контроллера
-    server.begin(); // включаем ожидание входящих соединений
-
-    Serial.begin(9600);
-    while (!Serial);
-    Serial.print("Server address:");
-    Serial.println(Ethernet.localIP()); // выводим IP-адрес контроллера
+// called when a ping comes in (replies to it are automatic)
+static void gotPinged (byte* ptr) {
+    ether.printIp(">>> ping from: ", ptr);
 }
 
-void loop() {
-    client = server.available(); // ожидаем объект клиент
-    if (client) {
-        // есть данные от клиента
-//        if (clientAlreadyConnected == false) {
-//            // сообщение о подключении
-//            Serial.println("Client connected");
-////            delay(100);
-//            client.println("Server ready"); // ответ клиенту
-//            clientAlreadyConnected= true;
-//        }
+void setup () {
+    Serial.begin(9600);
+    Serial.println("\n[pings]");
 
-        while(client.available() > 0) {
-            char chr = client.read(); // чтение символа
-            server.write(chr); // передача клиенту
-            Serial.write(chr);
-        }
-        Serial.println("\nPack sended");
+    // Change 'SS' to your Slave Select pin, if you arn't using the default pin
+    if (ether.begin(sizeof Ethernet::buffer, mymac, SS) == 0)
+        Serial.println(F("Failed to access Ethernet controller"));
+    if (!ether.dhcpSetup())
+        Serial.println(F("DHCP failed"));
+
+    ether.printIp("IP:  ", ether.myip);
+    ether.printIp("GW:  ", ether.gwip);
+
+#if 1
+    // use DNS to locate the IP address we want to ping
+    if (!ether.dnsLookup(PSTR("www.google.com")))
+        Serial.println("DNS failed");
+#else
+    ether.parseIp(ether.hisip, "74.125.77.99");
+#endif
+    ether.printIp("SRV: ", ether.hisip);
+
+    // call this to report others pinging us
+    ether.registerPingCallback(gotPinged);
+
+    timer = -9999999; // start timing out right away
+    Serial.println();
+}
+
+void loop () {
+    word len = ether.packetReceive(); // go receive new packets
+    word pos = ether.packetLoop(len); // respond to incoming pings
+
+    // report whenever a reply to our outgoing ping comes back
+    if (len > 0 && ether.packetLoopIcmpCheckReply(ether.hisip)) {
+        Serial.print("  ");
+        Serial.print((micros() - timer) * 0.001, 3);
+        Serial.println(" ms");
+    }
+
+    // ping a remote server once every few seconds
+    if (micros() - timer >= 5000000) {
+        ether.printIp("Pinging: ", ether.hisip);
+        timer = micros();
+        ether.clientIcmpRequest(ether.hisip);
     }
 }
