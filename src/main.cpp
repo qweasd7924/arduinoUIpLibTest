@@ -40,6 +40,7 @@ void loop() {
         if (clientAlreadyConnected == false) {
             // сообщение о подключении
             Serial.println("Client connected");
+            delay(100);
             client.println("Server ready"); // ответ клиенту
             clientAlreadyConnected= true;
         }
@@ -49,5 +50,6 @@ void loop() {
             server.write(chr); // передача клиенту
             Serial.write(chr);
         }
+        Serial.println("\nPack sended");
     }
 }
