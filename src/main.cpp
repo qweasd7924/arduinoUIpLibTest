@@ -1,4 +1,3 @@
-#include <FlexyStepper.h>
 // TCP сервер, возвращает полученные данные
 //#include <SPI.h>
 #include <UIPEthernet.h>
@@ -21,52 +20,14 @@ String req;
 String resp = "-123-\n";
 int respLen = 0;
 
-//--------------------------Stepper----------------------
-const int STEP_X = 2;
-const int DIR_X = 5;
-//const int STEP_X = 3;
-//const int DIR_X = 6;
-const int ENABLE = 8;
-
-
-FlexyStepper stepperX;
 
 void setup() {
-    //--------------------------Ethernet setup----------------------
-    Serial.begin(9600);
-    Serial.println("Getting IP address using DHCP");
-    if (Ethernet.begin(mac) == 0) {
-        Serial.println("Failed to configure using DHCP");
-        while (true); // зависаем по ошибке
-    }
-
-    // вывод IP адреса
-    Serial.print("IP address: ");
-    IPAddress ip = Ethernet.localIP();
-    for (byte i = 0; i < 4; i++) {
-        Serial.print(ip[i], DEC);
-        Serial.print(".");
-    }
-    Serial.println();
-    server.begin(); // включаем ожидание входящих соединений
-
+    Ethernet.begin(mac, ip); // инициализация контроллера
 //    Ethernet.begin(mac, ip, myDns, gateway, subnet); // инициализация контроллера
-//    server.begin(); // включаем ожидание входящих соединений
-//    Serial.begin(9600);
-//    Serial.print("Server address:");
-//    Serial.println(Ethernet.localIP()); // выводим IP-адрес контроллера
-
-
-//--------------------------Stepper setup----------------------
-    stepperX.
-            connectToPins(STEP_X, DIR_X
-    );
-    stepperX.setSpeedInStepsPerSecond(200);
-    stepperX.setAccelerationInStepsPerSecondPerSecond(100);
-    pinMode(ENABLE,
-            OUTPUT);
-    digitalWrite(ENABLE,
-                 HIGH);
+    server.begin(); // включаем ожидание входящих соединений
+    Serial.begin(9600);
+    Serial.print("Server address:");
+    Serial.println(Ethernet.localIP()); // выводим IP-адрес контроллера
 }
 
 bool isConnectd = false;
@@ -111,28 +72,3 @@ void loop() {
 //        client.stop();
     }
 }
-
-//void moveSteps(int steps) {
-//    Serial.println("------Start move");
-//    bool stopFlag = false;
-//    stepperX.setCurrentPositionInSteps(0);
-//    stepperX.setTargetPositionInSteps(2000);
-//    while (!stepperX.motionComplete()) {
-//        //
-//        // Note: The code added to this loop must execute VERY fast.
-//        // Perhaps no longer than 0.05 milliseconds.
-//        //
-//        //
-//        // process motor steps
-//        //
-//        stepperX.processMovement();
-//
-//
-//        //    if (stopFlag == false)
-//        //    {
-//        //      stepper.setTargetPositionToStop();
-//        //      stopFlag = true;
-//        //    }
-//    }
-//    Serial.println("------End move");
-//}
