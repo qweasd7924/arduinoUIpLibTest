@@ -33,19 +33,40 @@ FlexyStepper stepperX;
 
 void setup() {
     //--------------------------Ethernet setup----------------------
-    Ethernet.begin(mac, ip, myDns, gateway, subnet); // инициализация контроллера
-    server.begin(); // включаем ожидание входящих соединений
     Serial.begin(9600);
-    Serial.print("Server address:");
-    Serial.println(Ethernet.localIP()); // выводим IP-адрес контроллера
+    Serial.println("Getting IP address using DHCP");
+    if (Ethernet.begin(mac) == 0) {
+        Serial.println("Failed to configure using DHCP");
+        while (true); // зависаем по ошибке
+    }
+
+    // вывод IP адреса
+    Serial.print("IP address: ");
+    IPAddress ip = Ethernet.localIP();
+    for (byte i = 0; i < 4; i++) {
+        Serial.print(ip[i], DEC);
+        Serial.print(".");
+    }
+    Serial.println();
+    server.begin(); // включаем ожидание входящих соединений
+
+//    Ethernet.begin(mac, ip, myDns, gateway, subnet); // инициализация контроллера
+//    server.begin(); // включаем ожидание входящих соединений
+//    Serial.begin(9600);
+//    Serial.print("Server address:");
+//    Serial.println(Ethernet.localIP()); // выводим IP-адрес контроллера
 
 
-    //--------------------------Stepper setup----------------------
-    stepperX.connectToPins(STEP_X, DIR_X);
+//--------------------------Stepper setup----------------------
+    stepperX.
+            connectToPins(STEP_X, DIR_X
+    );
     stepperX.setSpeedInStepsPerSecond(200);
     stepperX.setAccelerationInStepsPerSecondPerSecond(100);
-    pinMode(ENABLE, OUTPUT);
-    digitalWrite(ENABLE, HIGH);
+    pinMode(ENABLE,
+            OUTPUT);
+    digitalWrite(ENABLE,
+                 HIGH);
 }
 
 bool isConnectd = false;
@@ -66,7 +87,7 @@ void loop() {
             req = (char *) msg;
             req = req.substring(0, size);
             Serial.println(req);
-
+            Serial.println(size);
 //      client.write(msg, size);
             //            client.println("123");
             //      server.println("321");
