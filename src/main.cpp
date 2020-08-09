@@ -58,23 +58,19 @@ void loop() {
 
 
     if (client) {
-        Serial.println("!!!Connected!!!");
+        Serial.println("---message received---");
         while ((size = client.available()) > 0) {
             //      Serial.println(size);
             uint8_t *msg = (uint8_t *) malloc(size);
             size = client.read(msg, size);
-            //      req = (char*)msg;
-
-            for (int i = 0; i < size; i++) {
-                Serial.print(msg[i]);
-            }
+            req = (char *) msg;
             req = req.substring(0, size);
             Serial.println(req);
 
 //      client.write(msg, size);
             //            client.println("123");
             //      server.println("321");
-            client.println(req + " recieved");
+            client.println(req + " received");
             //      Serial.println("\n---Start message---");
             //      Serial.println(req + " is String");
             //      client.print(req + " recieved");
@@ -91,7 +87,7 @@ void loop() {
             free(msg);
         }
         Serial.println("---end message---");
-        client.stop();
+//        client.stop();
     }
 }
 
